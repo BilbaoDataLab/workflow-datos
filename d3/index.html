@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body {
+  font: 10px sans-serif;
+}
+
+.axis path,
+.axis line {
+  fill: none;
+  stroke: #000;
+  shape-rendering: crispEdges;
+}
+
+.axis .tick line {
+  stroke: #eee;
+}
+
+.domain {
+  display: none;
+}
+
+.dot {
+  stroke: white;
+}
+
+</style>
+<body>
+<div id="vis"></div>
+
+<script src="//d3js.org/d3.v4.min.js"></script>
+<script>
+// Margin convention: https://bl.ocks.org/mbostock/3019563
+var margin = {top: 20, right: 20, bottom: 30, left: 40},
+    ratio = 0.5, // Height ratio
+    width = d3.select("#vis").node().clientWidth - margin.left - margin.right, // Width depending on the div
+    height = width * ratio - margin.top - margin.bottom; // Height depending on the ratio
+
+// X scale, linear, depending on the width
+// var x = d3.scaleLinear()
+//     .range([0, width]);
+    
+var x = d3.scaleLog()
+    .range([0, width]);
+
+// Y scale, linear, depending on the height
+var y = d3.scaleLinear()
+    .range([height, 0]);
+
+// 'Category' scale
+var color = d3.scaleSequential(d3.interpolateInferno);
+
+var xAxis = d3.axisBottom()
+    .tickSize(-height)
+    .tickPadding(10)
+    .ticks(20, ",.1s")
+    .scale(x);
+
+var yAxis = d3.axisLeft()
+    .tickSize(-width)
+    .tickPadding(10)
+    .scale(y);
+
+// Create SVG and container
+var svg = d3.select("body").append("svg")
+    .attr("width", width + margin.left + margin.right)
+    .attr("height", height + margin.top + margin.bottom)
+  .append("g")
+    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+// Read the data
+d3.csv("data.csv", function(error, data) {
+  if (error) throw error;
+
+  // Process the data, coerce them into numbers
+  data.forEach(function(d) {
+    d.renta_2013 = +d.renta_2013;
+    d.pop_2013 = +d.pop_2013;
+  });
+  
+  // Finding out the domain
+  x.domain(d3.extent(data, function(d) { return d.pop_2013; })).nice();
+  y.domain(d3.extent(data, function(d) { return d.renta_2013; })).nice();
+  color.domain(d3.extent(data, function(d) {return d.renta_2013 }).reverse());
+
+  // Append x axis
+  svg.append("g")
+      .attr("class", "x axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+
+  // Append y axis
+  svg.append("g")
+      .attr("class", "y axis")
+      .call(yAxis)
+
+  // Append the dots
+  svg.selectAll(".dot")
+      .data(data) // Reference to our data
+    .enter().append("circle") // Data join, now it's looping
+      .attr("class", "dot")
+      .attr("r", 8)
+      .attr("cx", function(d) { return x(d.pop_2013); }) // X value
+      .attr("cy", function(d) { return y(d.renta_2013); }) // Y value
+      .style("fill", function(d) { return color(d.renta_2013); }); // Fill according to the category
+  
+  // Assign a listener to the resize event
+  window.onresize = resize;
+  
+  function resize() {
+    // Update width & height
+    width = d3.select("#vis").node().clientWidth - margin.left - margin.right,
+    height = width * ratio - margin.top - margin.bottom;
+    
+    // Update scales
+    x.range([0, width]);
+    y.range([height, 0]);
+
+    // Update axis
+    xAxis.tickSize(-height)
+    yAxis.tickPadding(10)
+    
+    // Update SVG
+    d3.selectAll("svg")
+        .attr("height", height + margin.top + margin.bottom)
+        .attr("width", width + margin.left + margin.right)
+    
+    // Update axis
+    d3.select(".y.axis").call(yAxis)
+    
+    d3.select(".x.axis")
+      .attr("transform", "translate(0," + height + ")")
+      .call(xAxis)
+    
+    // Update dots
+    svg.selectAll(".dot")
+        .attr("cx", function(d) { return x(d.pop_2013); })
+        .attr("cy", function(d) { return y(d.renta_2013); })
+  }
+});
+</script>
