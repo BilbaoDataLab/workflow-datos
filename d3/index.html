@@ -25,12 +25,25 @@ body {
   stroke: white;
 }
 
+.selected-city {
+  stroke: black;
+  stroke-width: 2;
+}
+
+.text-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
 </style>
 <body>
+<h1>Renta y población en el País Vasco</h1>
 <div id="vis"></div>
 
 <script src="//d3js.org/d3.v4.min.js"></script>
 <script>
+var city = "Bilbao";
+
 // Margin convention: https://bl.ocks.org/mbostock/3019563
 var margin = {top: 20, right: 20, bottom: 30, left: 40},
     ratio = 0.5, // Height ratio
@@ -63,7 +76,7 @@ var yAxis = d3.axisLeft()
     .scale(y);
 
 // Create SVG and container
-var svg = d3.select("body").append("svg")
+var svg = d3.select("#vis").append("svg")
     .attr("width", width + margin.left + margin.right)
     .attr("height", height + margin.top + margin.bottom)
   .append("g")
@@ -98,12 +111,28 @@ d3.csv("data.csv", function(error, data) {
   // Append the dots
   svg.selectAll(".dot")
       .data(data) // Reference to our data
-    .enter().append("circle") // Data join, now it's looping
-      .attr("class", "dot")
+      .enter()
+      .append("circle") // Data join, now it's looping
+      .attr('class', function(d) { return d.name === city ? 'dot selected-city' : 'dot'; })
       .attr("r", 8)
       .attr("cx", function(d) { return x(d.pop_2013); }) // X value
       .attr("cy", function(d) { return y(d.renta_2013); }) // Y value
       .style("fill", function(d) { return color(d.renta_2013); }); // Fill according to the category
+      
+      
+  // Add name of the current city
+  svg.selectAll('.text-label')
+    .data(data)
+    .enter()
+    .filter(function(d) { return d.name === city; })
+    .append('text')
+    .attr('class', 'text-label')
+    .attr('x', function(d) { return x(d.pop_2013) })
+    .attr('y', function(d) { return y(d.renta_2013) })
+    .attr('dy', -15)
+    .attr('dx', 0)
+    .attr('text-anchor', 'middle')
+    .text(function(d) { return d.name });
   
   // Assign a listener to the resize event
   window.onresize = resize;
@@ -118,25 +147,30 @@ d3.csv("data.csv", function(error, data) {
     y.range([height, 0]);
 
     // Update axis
-    xAxis.tickSize(-height)
-    yAxis.tickPadding(10)
+    xAxis.tickSize(-height);
+    yAxis.tickPadding(10);
     
     // Update SVG
     d3.selectAll("svg")
         .attr("height", height + margin.top + margin.bottom)
-        .attr("width", width + margin.left + margin.right)
+        .attr("width", width + margin.left + margin.right);
     
     // Update axis
-    d3.select(".y.axis").call(yAxis)
+    d3.select(".y.axis").call(yAxis);
     
     d3.select(".x.axis")
       .attr("transform", "translate(0," + height + ")")
-      .call(xAxis)
+      .call(xAxis);
     
     // Update dots
     svg.selectAll(".dot")
         .attr("cx", function(d) { return x(d.pop_2013); })
-        .attr("cy", function(d) { return y(d.renta_2013); })
+        .attr("cy", function(d) { return y(d.renta_2013); });
+    
+    // Update label
+    svg.selectAll('.text-label')
+      .attr('x', function(d) { return x(d.pop_2013) })
+      .attr('y', function(d) { return y(d.renta_2013) });
   }
 });
 </script>
