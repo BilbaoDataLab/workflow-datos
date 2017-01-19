@@ -2,7 +2,13 @@
 En este taller vamos a ver cómo hacer un scatterplot en D3.js con datos de Udalmap.
 
 #### index.html
-Gráfico de referencia.
+Gráfico final de referencia.
+- ¿Qué es HTML? Servidor local.
+- ¿Qué es SVG? 
+- Margin convention.
+- Leer datos. CSV, JSON, TSV.
+- Escalas.
+- Data join.
 
 #### Si quieres saber más...
 - [bl.ocks.org](https://bl.ocks.org/)
