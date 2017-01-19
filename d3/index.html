@@ -6,6 +6,10 @@ body {
   font: 10px sans-serif;
 }
 
+h1 {
+  text-align: center;
+}
+
 .axis path,
 .axis line {
   fill: none;
@@ -33,6 +37,11 @@ body {
 .text-label {
   font-size: 14px;
   font-weight: 700;
+}
+
+.label {
+  font-size: 20px;
+  fill: black;
 }
 
 </style>
@@ -118,8 +127,25 @@ d3.csv("data.csv", function(error, data) {
       .attr("cx", function(d) { return x(d.pop_2013); }) // X value
       .attr("cy", function(d) { return y(d.renta_2013); }) // Y value
       .style("fill", function(d) { return color(d.renta_2013); }); // Fill according to the category
-      
-      
+  
+  // Legend
+  svg.append('text')
+    .attr("class", "label pop")
+    .attr("x", width)
+    .attr("y", height)
+    .attr("dy", -5)
+    .attr("text-anchor", "end")
+    .text("Población →");
+    
+  svg.append('text')
+    .attr("class", "label rent")
+    .attr("x", 0)
+    .attr("y", 0)
+    .attr("dy", 25)
+    .attr("dx", 5)
+    .attr("text-anchor", "start")
+    .text("Renta ↑");
+  
   // Add name of the current city
   svg.selectAll('.text-label')
     .data(data)
@@ -171,6 +197,14 @@ d3.csv("data.csv", function(error, data) {
     svg.selectAll('.text-label')
       .attr('x', function(d) { return x(d.pop_2013) })
       .attr('y', function(d) { return y(d.renta_2013) });
+      
+    svg.select('.label.pop')
+      .attr('x', width)
+      .attr('y', height);
+      
+    svg.select('.label.rent')
+      .attr('x', 0)
+      .attr('y', 0);
   }
 });
 </script>
